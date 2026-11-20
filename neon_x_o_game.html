@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NEON X-O</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-black: #030306;
+      --neon-white: #ffffff;
+      --neon-red: #ff1e42;
+      --neon-red-glow: rgba(255, 30, 66, 0.85);
+      --neon-yellow: #ffe600;
+      --neon-yellow-glow: rgba(255, 230, 0, 0.85);
+      --neon-purple: #c837ff;
+      --neon-purple-glow: rgba(200, 55, 255, 0.95);
+      --surface-dark: rgba(16, 16, 26, 0.88);
+      --border-subtle: rgba(255, 255, 255, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100dvh;
+      background-color: var(--bg-black);
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Ambient dark neon background glow */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 30, 66, 0.08), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(255, 230, 0, 0.08), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(200, 55, 255, 0.06), transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Bar & Settings Gear */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    .brand-badge {
+      pointer-events: auto;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .brand-badge:hover {
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: scale(1.02);
+    }
+
+    .brand-x {
+      color: var(--neon-red);
+      text-shadow: 0 0 10px var(--neon-red-glow);
+    }
+
+    .brand-o {
+      color: var(--neon-yellow);
+      text-shadow: 0 0 10px var(--neon-yellow-glow);
+    }
+
+    .settings-btn {
+      pointer-events: auto;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.12);
+      transition: all 0.25s ease;
+    }
+
+    .settings-btn:hover, .settings-btn:active {
+      background: rgba(255, 255, 255, 0.14);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.35);
+      transform: rotate(35deg);
+    }
+
+    /* Main Container */
+    .app-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 960px;
+      padding: 76px 16px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+    }
+
+    .screen {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Title Hero */
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.6rem, 9vw, 4.4rem);
+      font-weight: 900;
+      letter-spacing: 6px;
+      text-align: center;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .hero-title .x-glow {
+      color: var(--neon-red);
+      text-shadow:
+        0 0 10px var(--neon-red),
+        0 0 28px var(--neon-red-glow),
+        0 0 55px rgba(255, 30, 66, 0.5);
+    }
+
+    .hero-title .dash-glow {
+      color: #ffffff;
+      text-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
+    }
+
+    .hero-title .o-glow {
+      color: var(--neon-yellow);
+      text-shadow:
+        0 0 10px var(--neon-yellow),
+        0 0 28px var(--neon-yellow-glow),
+        0 0 55px rgba(255, 230, 0, 0.5);
+    }
+
+    .hero-subtitle {
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 0.98rem;
+      text-align: center;
+      margin-bottom: 36px;
+      max-width: 400px;
+    }
+
+    /* Mode Cards */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .neon-card-btn {
+      position: relative;
+      background: rgba(15, 15, 22, 0.9);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      border-radius: 20px;
+      padding: 22px 24px;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      text-align: left;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+    }
+
+    .neon-card-btn:hover, .neon-card-btn:active {
+      transform: translateY(-3px);
+      border-color: #ffffff;
+      box-shadow: 0 0 24px rgba(255, 255, 255, 0.25);
+    }
+
+    .neon-card-btn.solo-card:hover {
+      border-color: var(--neon-red);
+      box-shadow: 0 0 26px rgba(255, 30, 66, 0.35);
+    }
+
+    .neon-card-btn.multi-card:hover {
+      border-color: var(--neon-yellow);
+      box-shadow: 0 0 26px rgba(255, 230, 0, 0.35);
+    }
+
+    .mode-icon-box {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.5rem;
+    }
+
+    .solo-card .mode-icon-box {
+      background: rgba(255, 30, 66, 0.14);
+      border: 1px solid rgba(255, 30, 66, 0.5);
+      color: var(--neon-red);
+      box-shadow: 0 0 16px rgba(255, 30, 66, 0.3);
+    }
+
+    .multi-card .mode-icon-box {
+      background: rgba(255, 230, 0, 0.14);
+      border: 1px solid rgba(255, 230, 0, 0.5);
+      color: var(--neon-yellow);
+      box-shadow: 0 0 16px rgba(255, 230, 0, 0.3);
+    }
+
+    .mode-info h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .mode-info p {
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.4;
+    }
+
+    /* Difficulty Selection */
+    .diff-container {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .section-heading {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.35rem;
+      text-align: center;
+      margin-bottom: 18px;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+    }
+
+    .diff-btn {
+      width: 100%;
+      padding: 18px 22px;
+      border-radius: 18px;
+      background: rgba(15, 15, 22, 0.92);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.22s ease;
+    }
+
+    .diff-btn:hover, .diff-btn:active {
+      transform: translateY(-2px);
+    }
+
+    .diff-btn.easy:hover {
+      border-color: #38ef7d;
+      box-shadow: 0 0 22px rgba(56, 239, 125, 0.35);
+    }
+
+    .diff-btn.medium:hover {
+      border-color: var(--neon-yellow);
+      box-shadow: 0 0 22px rgba(255, 230, 0, 0.35);
+    }
+
+    .diff-btn.hard:hover {
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 25px rgba(200, 55, 255, 0.45);
+    }
+
+    .diff-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: block;
+      text-align: left;
+    }
+
+    .diff-desc {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.62);
+      display: block;
+      text-align: left;
+      margin-top: 3px;
+    }
+
+    .diff-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .easy .diff-badge {
+      background: rgba(56, 239, 125, 0.15);
+      color: #38ef7d;
+      border: 1px solid rgba(56, 239, 125, 0.4);
+    }
+
+    .medium .diff-badge {
+      background: rgba(255, 230, 0, 0.15);
+      color: var(--neon-yellow);
+      border: 1px solid rgba(255, 230, 0, 0.4);
+    }
+
+    .hard .diff-badge {
+      background: rgba(200, 55, 255, 0.18);
+      color: #df80ff;
+      border: 1px solid rgba(200, 55, 255, 0.5);
+    }
+
+    .back-link-btn {
+      margin-top: 18px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.8);
+      padding: 12px 22px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .back-link-btn:hover {
+      border-color: #ffffff;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    /* Game Arena Layout (Responsive Side/Top Scoreboard + Board) */
+    .game-layout {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    @media (min-width: 820px) {
+      .game-layout {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 44px;
+      }
+    }
+
+    /* Scoreboard & Status Panel */
+    .side-panel {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mode-pill {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 1.5px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.85);
+      text-transform: uppercase;
+    }
+
+    .scoreboard-box {
+      width: 100%;
+      background: rgba(12, 12, 18, 0.92);
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      border-radius: 22px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    }
+
+    .score-player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: 14px;
+      transition: all 0.25s ease;
+    }
+
+    .score-player.active-turn-x {
+      background: rgba(255, 30, 66, 0.12);
+      box-shadow: inset 0 0 14px rgba(255, 30, 66, 0.25);
+    }
+
+    .score-player.active-turn-o {
+      background: rgba(255, 230, 0, 0.12);
+      box-shadow: inset 0 0 14px rgba(255, 230, 0, 0.25);
+    }
+
+    .player-tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: rgba(255, 255, 255, 0.72);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .score-num-x {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.3rem;
+      font-weight: 900;
+      color: var(--neon-red);
+      text-shadow:
+        0 0 8px var(--neon-red),
+        0 0 22px var(--neon-red-glow);
+      line-height: 1.1;
+    }
+
+    .score-num-o {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.3rem;
+      font-weight: 900;
+      color: var(--neon-yellow);
+      text-shadow:
+        0 0 8px var(--neon-yellow),
+        0 0 22px var(--neon-yellow-glow);
+      line-height: 1.1;
+    }
+
+    .score-divider {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
+      padding: 0 10px;
+    }
+
+    /* Turn / Result Status Banner */
+    .status-banner {
+      width: 100%;
+      min-height: 52px;
+      padding: 12px 18px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      transition: all 0.25s ease;
+    }
+
+    .status-banner.win-x {
+      border-color: var(--neon-red);
+      background: rgba(255, 30, 66, 0.14);
+      color: #ff6b81;
+      box-shadow: 0 0 22px rgba(255, 30, 66, 0.3);
+    }
+
+    .status-banner.win-o {
+      border-color: var(--neon-yellow);
+      background: rgba(255, 230, 0, 0.14);
+      color: #fff066;
+      box-shadow: 0 0 22px rgba(255, 230, 0, 0.3);
+    }
+
+    .status-banner.draw {
+      border-color: var(--neon-purple);
+      background: rgba(200, 55, 255, 0.14);
+      color: #e599ff;
+      box-shadow: 0 0 22px rgba(200, 55, 255, 0.3);
+    }
+
+    /* 3x3 Neon Grid Board */
+    .board-stage {
+      position: relative;
+      width: min(86vw, 370px);
+      height: min(86vw, 370px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+
+    .neon-board {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+    }
+
+    /* Bright glowing white grid dividers */
+    .grid-line {
+      position: absolute;
+      background: #ffffff;
+      border-radius: 999px;
+      box-shadow:
+        0 0 6px #ffffff,
+        0 0 14px rgba(255, 255, 255, 0.9),
+        0 0 26px rgba(255, 255, 255, 0.55);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .grid-line.v-1 {
+      width: 5px;
+      top: 2%;
+      bottom: 2%;
+      left: calc(33.333% - 2.5px);
+    }
+
+    .grid-line.v-2 {
+      width: 5px;
+      top: 2%;
+      bottom: 2%;
+      left: calc(66.666% - 2.5px);
+    }
+
+    .grid-line.h-1 {
+      height: 5px;
+      left: 2%;
+      right: 2%;
+      top: calc(33.333% - 2.5px);
+    }
+
+    .grid-line.h-2 {
+      height: 5px;
+      left: 2%;
+      right: 2%;
+      top: calc(66.666% - 2.5px);
+    }
+
+    /* Individual Square Cells */
+    .cell {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      padding: 14%;
+      transition: background-color 0.18s ease;
+    }
+
+    .cell:hover:not(.occupied):not(.locked) {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 14px;
+    }
+
+    .cell.occupied, .cell.locked {
+      cursor: default;
+    }
+
+    /* Crisp Neon SVG Symbols for X and 0 */
+    .symbol-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      animation: popSymbol 0.26s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popSymbol {
+      0% {
+        transform: scale(0.35);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .x-stroke {
+      stroke: var(--neon-red);
+      stroke-width: 16;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 6px var(--neon-red)) drop-shadow(0 0 16px var(--neon-red-glow));
+    }
+
+    .o-stroke {
+      stroke: var(--neon-yellow);
+      stroke-width: 15;
+      fill: none;
+      filter: drop-shadow(0 0 6px var(--neon-yellow)) drop-shadow(0 0 16px var(--neon-yellow-glow));
+    }
+
+    /* Animated Bright Glowing Purple Winning Line Overlay */
+    .win-line-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      overflow: visible;
+    }
+
+    .win-strike-line {
+      stroke: var(--neon-purple);
+      stroke-width: 10;
+      stroke-linecap: round;
+      filter:
+        drop-shadow(0 0 6px #ffffff)
+        drop-shadow(0 0 12px var(--neon-purple))
+        drop-shadow(0 0 26px var(--neon-purple-glow));
+      stroke-dasharray: 450;
+      stroke-dashoffset: 450;
+      animation: drawWinLine 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes drawWinLine {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    /* Action Buttons Below/Side */
+    .controls-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .action-btn {
+      padding: 13px 14px;
+      border-radius: 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1.5px solid rgba(255, 255, 255, 0.24);
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover, .action-btn:active {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: #ffffff;
+    }
+
+    .action-btn.primary-next {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(200, 55, 255, 0.28), rgba(255, 30, 66, 0.24));
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 18px rgba(200, 55, 255, 0.35);
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.8px;
+    }
+
+    .action-btn.primary-next:hover {
+      box-shadow: 0 0 26px rgba(200, 55, 255, 0.65);
+      transform: translateY(-1px);
+    }
+
+    /* Settings Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+      animation: fadeInModal 0.2s ease forwards;
+    }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 390px;
+      background: #0c0c14;
+      border: 1.5px solid rgba(255, 255, 255, 0.28);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 0 40px rgba(200, 55, 255, 0.25);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .modal-header h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+    }
+
+    .close-modal-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    .setting-label {
+      display: block;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.68);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .lang-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .lang-btn {
+      padding: 11px 8px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(255, 255, 255, 0.82);
+      font-weight: 700;
+      font-size: 0.86rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+      border-color: var(--neon-yellow);
+      background: rgba(255, 230, 0, 0.14);
+      color: var(--neon-yellow);
+      box-shadow: 0 0 14px rgba(255, 230, 0, 0.3);
+    }
+
+    .sound-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      cursor: pointer;
+    }
+
+    .sound-state-text {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .toggle-switch {
+      width: 52px;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.2);
+      position: relative;
+      transition: background 0.25s ease;
+    }
+
+    .toggle-switch.on {
+      background: var(--neon-purple);
+      box-shadow: 0 0 14px var(--neon-purple-glow);
+    }
+
+    .toggle-knob {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #ffffff;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.25s ease;
+    }
+
+    .toggle-switch.on .toggle-knob {
+      transform: translateX(24px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation & Settings Trigger -->
+  <header class="top-bar">
+    <div class="brand-badge" id="brandHomeBtn" title="Main Menu">
+      <span class="brand-x">X</span>
+      <span>•</span>
+      <span class="brand-o">0</span>
+    </div>
+
+    <button class="settings-btn" id="openSettingsBtn" aria-label="Settings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <main class="app-wrapper">
+
+    <!-- SCREEN 1: ENTRY / MODE SELECTION -->
+    <section id="entryScreen" class="screen active">
+      <h1 class="hero-title">
+        <span class="x-glow">X</span>
+        <span class="dash-glow">-</span>
+        <span class="o-glow">0</span>
+      </h1>
+      <p class="hero-subtitle" data-i18n="subtitle">Oyun rejimini seç və neon arenada yarış!</p>
+
+      <div class="mode-grid">
+        <button class="neon-card-btn solo-card" id="selectSoloBtn">
+          <div class="mode-icon-box">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+              <circle cx="9" cy="10" r="1.5"></circle>
+              <circle cx="15" cy="10" r="1.5"></circle>
+              <path d="M9 15h6"></path>
+            </svg>
+          </div>
+          <div class="mode-info">
+            <h3 data-i18n="soloTitle">TƏK OYUNÇU</h3>
+            <p data-i18n="soloDesc">Sistemə qarşı zəkanı sına</p>
+          </div>
+        </button>
+
+        <button class="neon-card-btn multi-card" id="selectMultiBtn">
+          <div class="mode-icon-box">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <div class="mode-info">
+            <h3 data-i18n="multiTitle">İKİ NƏFƏRLİK</h3>
+            <p data-i18n="multiDesc">Dostunla eyni ekranda üz-üzə oyna</p>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: SOLO DIFFICULTY SELECTION -->
+    <section id="difficultyScreen" class="screen">
+      <h2 class="section-heading" data-i18n="chooseDiff">Çətinlik Səviyyəsi</h2>
+      <div class="diff-container">
+        <button class="diff-btn easy" data-diff="easy">
+          <div>
+            <span class="diff-title" data-i18n="diffEasy">Asan</span>
+            <span class="diff-desc" data-i18n="diffEasyDesc">Rahat oyun, sistem sadə həmlələr edir</span>
+          </div>
+          <span class="diff-badge">AI I</span>
+        </button>
+
+        <button class="diff-btn medium" data-diff="medium">
+          <div>
+            <span class="diff-title" data-i18n="diffMedium">Orta</span>
+            <span class="diff-desc" data-i18n="diffMediumDesc">Hücumları bloklayır, amma səhv edə bilər</span>
+          </div>
+          <span class="diff-badge">AI II</span>
+        </button>
+
+        <button class="diff-btn hard" data-diff="hard">
+          <div>
+            <span class="diff-title" data-i18n="diffHard">Çətin</span>
+            <span class="diff-desc" data-i18n="diffHardDesc">Maksimum müdafiə (~20% qazanma şansı)</span>
+          </div>
+          <span class="diff-badge">AI III</span>
+        </button>
+      </div>
+
+      <button class="back-link-btn" id="backFromDiffBtn">
+        <span>←</span>
+        <span data-i18n="back">Geri</span>
+      </button>
+    </section>
+
+    <!-- SCREEN 3: GAME BOARD & SCOREBOARD -->
+    <section id="gameScreen" class="screen">
+      <div class="game-layout">
+
+        <!-- 3x3 Neon Board -->
+        <div class="board-stage">
+          <div class="neon-board" id="neonBoard">
+            <!-- Glowing White Grid Lines -->
+            <div class="grid-line v-1"></div>
+            <div class="grid-line v-2"></div>
+            <div class="grid-line h-1"></div>
+            <div class="grid-line h-2"></div>
+
+            <!-- 9 Interactive Cells -->
+            <button class="cell" data-index="0" aria-label="Cell 1"></button>
+            <button class="cell" data-index="1" aria-label="Cell 2"></button>
+            <button class="cell" data-index="2" aria-label="Cell 3"></button>
+            <button class="cell" data-index="3" aria-label="Cell 4"></button>
+            <button class="cell" data-index="4" aria-label="Cell 5"></button>
+            <button class="cell" data-index="5" aria-label="Cell 6"></button>
+            <button class="cell" data-index="6" aria-label="Cell 7"></button>
+            <button class="cell" data-index="7" aria-label="Cell 8"></button>
+            <button class="cell" data-index="8" aria-label="Cell 9"></button>
+
+            <!-- Winning Line SVG Layer -->
+            <svg class="win-line-svg" id="winLineSvg" viewBox="0 0 300 300"></svg>
+          </div>
+        </div>
+
+        <!-- Scoreboard & Controls -->
+        <div class="side-panel">
+          <div class="mode-pill" id="activeModeBadge">MULTI</div>
+
+          <div class="scoreboard-box">
+            <div class="score-player" id="playerXCard">
+              <span class="player-tag" id="playerXLabel">OYUNÇU X</span>
+              <span class="score-num-x" id="scoreX">0</span>
+            </div>
+
+            <div class="score-divider">:</div>
+
+            <div class="score-player" id="playerOCard">
+              <span class="player-tag" id="playerOLabel">OYUNÇU 0</span>
+              <span class="score-num-o" id="scoreO">0</span>
+            </div>
+          </div>
+
+          <div class="status-banner" id="statusBanner">Növbə: X</div>
+
+          <div class="controls-row">
+            <button class="action-btn primary-next" id="nextRoundBtn" data-i18n="nextRound">Növbəti Raund</button>
+            <button class="action-btn" id="resetScoreBtn" data-i18n="resetScore">Hesabı Sıfırla</button>
+            <button class="action-btn" id="mainMenuBtn" data-i18n="mainMenu">Əsas Menyu</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 data-i18n="settingsTitle">Ayarlar</h2>
+        <button class="close-modal-btn" id="closeSettingsBtn" aria-label="Close">✕</button>
+      </div>
+
+      <div class="setting-group">
+        <span class="setting-label" data-i18n="languageLabel">Dil Seçimi</span>
+        <div class="lang-options">
+          <button class="lang-btn active" data-lang="az">Azərbaycan</button>
+          <button class="lang-btn" data-lang="tr">Türkçe</button>
+          <button class="lang-btn" data-lang="en">English</button>
+        </div>
+      </div>
+
+      <div class="setting-group" style="margin-bottom: 0;">
+        <span class="setting-label" data-i18n="soundLabel">Səs Effektləri</span>
+        <div class="sound-toggle-row" id="soundToggleRow">
+          <span class="sound-state-text" id="soundStateText">Açıq</span>
+          <div class="toggle-switch on" id="soundSwitch">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * NEON X-O GAME ENGINE
+     * Supports:
+     * - 3 Languages (AZ, TR, EN)
+     * - Web Audio API synthesized neon sound effects (No external audio dependencies)
+     * - Solo (Easy, Medium, Hard with ~80% Minimax / ~20% probabilistic win window)
+     * - Multi (Local 2-Player Pass & Play)
+     * - Neon Red X, Neon Yellow 0, Bright White Grid, Neon Purple Animated Win Line
+     */
+
+    const TRANSLATIONS = {
+      az: {
+        subtitle: "Oyun rejimini seç və neon arenada yarış!",
+        soloTitle: "TƏK OYUNÇU",
+        soloDesc: "Sistemə qarşı zəkanı sına",
+        multiTitle: "İKİ NƏFƏRLİK",
+        multiDesc: "Dostunla eyni ekranda üz-üzə oyna",
+        chooseDiff: "Çətinlik Səviyyəsi",
+        diffEasy: "Asan",
+        diffEasyDesc: "Rahat oyun, sistem sadə həmlələr edir",
+        diffMedium: "Orta",
+        diffMediumDesc: "Hücumları bloklayır, amma səhv edə bilər",
+        diffHard: "Çətin",
+        diffHardDesc: "Maksimum müdafiə (~20% qazanma şansı)",
+        back: "Geri",
+        playerX: "OYUNÇU X",
+        playerO: "OYUNÇU 0",
+        youX: "SƏN (X)",
+        aiO: "SİSTEM (0)",
+        turnX: "Növbə: X",
+        turnO: "Növbə: 0",
+        aiThinking: "Sistem düşünür...",
+        winX: "X Qazandı! 🎉",
+        winO: "0 Qazandı! 🎉",
+        draw: "Bərabərə! 🤝",
+        nextRound: "Növbəti Raund",
+        resetScore: "Hesabı Sıfırla",
+        mainMenu: "Əsas Menyu",
+        settingsTitle: "Ayarlar",
+        languageLabel: "Dil Seçimi",
+        soundLabel: "Səs Effektləri",
+        soundOn: "Açıq",
+        soundOff: "Bağlı",
+        badgeMulti: "İKİ NƏFƏRLİK",
+        badgeSoloPrefix: "TƏK OYUNÇU • "
+      },
+      tr: {
+        subtitle: "Oyun modunu seç ve neon arenada yarış!",
+        soloTitle: "TEK OYUNCU",
+        soloDesc: "Sisteme karşı zekânı test et",
+        multiTitle: "İKİ KİŞİLİK",
+        multiDesc: "Arkadaşınla aynı ekranda karşılıklı oyna",
+        chooseDiff: "Zorluk Seviyesi",
+        diffEasy: "Kolay",
+        diffEasyDesc: "Rahat oyun, sistem basit hamleler yapar",
+        diffMedium: "Orta",
+        diffMediumDesc: "Tehditleri bloklar ama hata yapabilir",
+        diffHard: "Zor",
+        diffHardDesc: "Maksimum savunma (~%20 kazanma şansı)",
+        back: "Geri",
+        playerX: "OYUNCU X",
+        playerO: "OYUNCU 0",
+        youX: "SEN (X)",
+        aiO: "SİSTEM (0)",
+        turnX: "Sıra: X",
+        turnO: "Sıra: 0",
+        aiThinking: "Sistem düşünüyor...",
+        winX: "X Kazandı! 🎉",
+        winO: "0 Kazandı! 🎉",
+        draw: "Berabere! 🤝",
+        nextRound: "Sonraki Tur",
+        resetScore: "Skoru Sıfırla",
+        mainMenu: "Ana Menü",
+        settingsTitle: "Ayarlar",
+        languageLabel: "Dil Seçimi",
+        soundLabel: "Ses Efektleri",
+        soundOn: "Açık",
+        soundOff: "Kapalı",
+        badgeMulti: "İKİ KİŞİLİK",
+        badgeSoloPrefix: "TEK OYUNCU • "
+      },
+      en: {
+        subtitle: "Choose a game mode and compete in the neon arena!",
+        soloTitle: "SOLO",
+        soloDesc: "Play vs AI — challenge the system",
+        multiTitle: "MULTI",
+        multiDesc: "Play with a friend face-to-face on one screen",
+        chooseDiff: "Select Difficulty",
+        diffEasy: "Easy",
+        diffEasyDesc: "Relaxed play, AI makes simple moves",
+        diffMedium: "Medium",
+        diffMediumDesc: "Blocks threats but can make mistakes",
+        diffHard: "Hard",
+        diffHardDesc: "Maximum defense (~20% win chance)",
+        back: "Back",
+        playerX: "PLAYER X",
+        playerO: "PLAYER 0",
+        youX: "YOU (X)",
+        aiO: "SYSTEM (0)",
+        turnX: "Turn: X",
+        turnO: "Turn: 0",
+        aiThinking: "System thinking...",
+        winX: "X Wins! 🎉",
+        winO: "0 Wins! 🎉",
+        draw: "Draw! 🤝",
+        nextRound: "Next Round",
+        resetScore: "Reset Score",
+        mainMenu: "Main Menu",
+        settingsTitle: "Settings",
+        languageLabel: "Language",
+        soundLabel: "Sound Effects",
+        soundOn: "On",
+        soundOff: "Off",
+        badgeMulti: "MULTI • 2 PLAYERS",
+        badgeSoloPrefix: "SOLO • "
+      }
+    };
+
+    // Winning combinations + SVG line coordinates (viewBox 0 0 300 300)
+    const WIN_PATTERNS = [
+      { combo: [0, 1, 2], x1: 22, y1: 50,  x2: 278, y2: 50 },   // Top row
+      { combo: [3, 4, 5], x1: 22, y1: 150, x2: 278, y2: 150 },  // Middle row
+      { combo: [6, 7, 8], x1: 22, y1: 250, x2: 278, y2: 250 },  // Bottom row
+      { combo: [0, 3, 6], x1: 50, y1: 22,  x2: 50,  y2: 278 },  // Left col
+      { combo: [1, 4, 7], x1: 150, y1: 22, x2: 150, y2: 278 },  // Middle col
+      { combo: [2, 5, 8], x1: 250, y1: 22, x2: 250, y2: 278 },  // Right col
+      { combo: [0, 4, 8], x1: 26, y1: 26,  x2: 274, y2: 274 },  // Main diagonal
+      { combo: [2, 4, 6], x1: 274, y1: 26, x2: 26,  y2: 274 }   // Anti diagonal
+    ];
+
+    // Game State
+    const state = {
+      lang: 'az',
+      soundEnabled: true,
+      mode: 'multi',        // 'solo' | 'multi'
+      difficulty: 'hard',   // 'easy' | 'medium' | 'hard'
+      board: Array(9).fill(null),
+      currentPlayer: 'X',
+      scores: { X: 0, O: 0 },
+      gameOver: false,
+      aiBusy: false,
+      resultType: null,     // 'winX' | 'winO' | 'draw' | null
+      winningPattern: null
+    };
+
+    // Web Audio API Sound Synthesizer
+    let audioCtx = null;
+
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      try {
+        ensureAudioContext();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'X') {
+          // Crisp high neon tap for X
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(540, now);
+          osc.frequency.exponentialRampToValueAtTime(780, now + 0.09);
+          gain.gain.setValueAtTime(0.16, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+          osc.start(now);
+          osc.stop(now + 0.11);
+        } else if (type === 'O') {
+          // Warm round neon pop for 0
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(420, now);
+          osc.frequency.exponentialRampToValueAtTime(300, now + 0.11);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+          osc.start(now);
+          osc.stop(now + 0.13);
+        } else if (type === 'win') {
+          // Celebratory neon synth arpeggio
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((freq, i) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(freq, now + i * 0.07);
+            g.gain.setValueAtTime(0.14, now + i * 0.07);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.28);
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.start(now + i * 0.07);
+            o.stop(now + i * 0.07 + 0.29);
+          });
+        } else if (type === 'draw') {
+          // Neutral two-tone chime
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(360, now);
+          osc.frequency.setValueAtTime(310, now + 0.12);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.26);
+        } else if (type === 'ui') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(620, now);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        }
+      } catch (e) {
+        // Ignore audio block errors if browser restricts autoplay
+      }
+    }
+
+    // DOM References
+    const entryScreen = document.getElementById('entryScreen');
+    const difficultyScreen = document.getElementById('difficultyScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const cells = Array.from(document.querySelectorAll('.cell'));
+    const winLineSvg = document.getElementById('winLineSvg');
+    const scoreXEl = document.getElementById('scoreX');
+    const scoreOEl = document.getElementById('scoreO');
+    const playerXCard = document.getElementById('playerXCard');
+    const playerOCard = document.getElementById('playerOCard');
+    const playerXLabel = document.getElementById('playerXLabel');
+    const playerOLabel = document.getElementById('playerOLabel');
+    const activeModeBadge = document.getElementById('activeModeBadge');
+    const statusBanner = document.getElementById('statusBanner');
+
+    // Screen Navigation
+    function showScreen(screenEl) {
+      [entryScreen, difficultyScreen, gameScreen].forEach(s => s.classList.remove('active'));
+      screenEl.classList.add('active');
+    }
+
+    // Language Engine
+    function applyLanguage(lang) {
+      state.lang = lang;
+      document.documentElement.lang = lang;
+      const dict = TRANSLATIONS[lang];
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.textContent = dict[key];
+        }
+      });
+
+      // Update active language button styling
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+
+      // Update sound text
+      document.getElementById('soundStateText').textContent = state.soundEnabled ? dict.soundOn : dict.soundOff;
+
+      // Refresh game labels if currently in game
+      updateGameLabelsAndStatus();
+    }
+
+    function updateGameLabelsAndStatus() {
+      const dict = TRANSLATIONS[state.lang];
+
+      if (state.mode === 'multi') {
+        activeModeBadge.textContent = dict.badgeMulti;
+        playerXLabel.textContent = dict.playerX;
+        playerOLabel.textContent = dict.playerO;
+      } else {
+        const diffMap = {
+          easy: dict.diffEasy,
+          medium: dict.diffMedium,
+          hard: dict.diffHard
+        };
+        activeModeBadge.textContent = dict.badgeSoloPrefix + diffMap[state.difficulty].toUpperCase();
+        playerXLabel.textContent = dict.youX;
+        playerOLabel.textContent = dict.aiO;
+      }
+
+      statusBanner.classList.remove('win-x', 'win-o', 'draw');
+      playerXCard.classList.remove('active-turn-x');
+      playerOCard.classList.remove('active-turn-o');
+
+      if (state.resultType === 'winX') {
+        statusBanner.textContent = dict.winX;
+        statusBanner.classList.add('win-x');
+      } else if (state.resultType === 'winO') {
+        statusBanner.textContent = dict.winO;
+        statusBanner.classList.add('win-o');
+      } else if (state.resultType === 'draw') {
+        statusBanner.textContent = dict.draw;
+        statusBanner.classList.add('draw');
+      } else if (state.aiBusy) {
+        statusBanner.textContent = dict.aiThinking;
+        playerOCard.classList.add('active-turn-o');
+      } else if (state.currentPlayer === 'X') {
+        statusBanner.textContent = dict.turnX;
+        playerXCard.classList.add('active-turn-x');
+      } else {
+        statusBanner.textContent = dict.turnO;
+        playerOCard.classList.add('active-turn-o');
+      }
+    }
+
+    // SVG Render Helpers for X and 0
+    function createXSvg() {
+      return `
+        <svg class="symbol-svg" viewBox="0 0 100 100">
+          <line class="x-stroke" x1="20" y1="20" x2="80" y2="80" />
+          <line class="x-stroke" x1="80" y1="20" x2="20" y2="80" />
+        </svg>
+      `;
+    }
+
+    function createOSvg() {
+      return `
+        <svg class="symbol-svg" viewBox="0 0 100 100">
+          <circle class="o-stroke" cx="50" cy="50" r="32" />
+        </svg>
+      `;
+    }
+
+    function drawWinningPurpleLine(pattern) {
+      winLineSvg.innerHTML = `
+        <line
+          class="win-strike-line"
+          x1="${pattern.x1}"
+          y1="${pattern.y1}"
+          x2="${pattern.x2}"
+          y2="${pattern.y2}"
+        />
+      `;
+    }
+
+    // Start / Reset Round
+    function startNewRound() {
+      state.board = Array(9).fill(null);
+      state.currentPlayer = 'X';
+      state.gameOver = false;
+      state.aiBusy = false;
+      state.resultType = null;
+      state.winningPattern = null;
+
+      winLineSvg.innerHTML = '';
+      cells.forEach(cell => {
+        cell.innerHTML = '';
+        cell.classList.remove('occupied', 'locked');
+      });
+
+      updateGameLabelsAndStatus();
+    }
+
+    function startGame(mode, difficulty = 'hard') {
+      state.mode = mode;
+      state.difficulty = difficulty;
+      state.scores = { X: 0, O: 0 };
+      scoreXEl.textContent = '0';
+      scoreOEl.textContent = '0';
+      startNewRound();
+      showScreen(gameScreen);
+    }
+
+    // Evaluate Board State
+    function checkWinner(boardState) {
+      for (const pattern of WIN_PATTERNS) {
+        const [a, b, c] = pattern.combo;
+        if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+          return { winner: boardState[a], pattern };
+        }
+      }
+      if (boardState.every(cell => cell !== null)) {
+        return { winner: 'DRAW', pattern: null };
+      }
+      return null;
+    }
+
+    // Handle Player Move
+    function makeMove(index, symbol) {
+      if (state.gameOver || state.board[index] !== null) return false;
+
+      state.board[index] = symbol;
+      const cell = cells[index];
+      cell.innerHTML = symbol === 'X' ? createXSvg() : createOSvg();
+      cell.classList.add('occupied');
+      playSound(symbol);
+
+      const outcome = checkWinner(state.board);
+      if (outcome) {
+        state.gameOver = true;
+        state.aiBusy = false;
+        cells.forEach(c => c.classList.add('locked'));
+
+        if (outcome.winner === 'X') {
+          state.scores.X += 1;
+          scoreXEl.textContent = state.scores.X;
+          state.resultType = 'winX';
+          state.winningPattern = outcome.pattern;
+          drawWinningPurpleLine(outcome.pattern);
+          setTimeout(() => playSound('win'), 120);
+        } else if (outcome.winner === 'O') {
+          state.scores.O += 1;
+          scoreOEl.textContent = state.scores.O;
+          state.resultType = 'winO';
+          state.winningPattern = outcome.pattern;
+          drawWinningPurpleLine(outcome.pattern);
+          setTimeout(() => playSound('win'), 120);
+        } else {
+          state.resultType = 'draw';
+          setTimeout(() => playSound('draw'), 120);
+        }
+
+        updateGameLabelsAndStatus();
+        return true;
+      }
+
+      // Switch turn
+      state.currentPlayer = symbol === 'X' ? 'O' : 'X';
+      updateGameLabelsAndStatus();
+      return true;
+    }
+
+    // AI Decision Engine (Solo Mode)
+    function getAvailableIndices(boardState) {
+      const empty = [];
+      for (let i = 0; i < 9; i++) {
+        if (boardState[i] === null) empty.push(i);
+      }
+      return empty;
+    }
+
+    function findImmediateWinningMove(boardState, symbol) {
+      const empty = getAvailableIndices(boardState);
+      for (const idx of empty) {
+        boardState[idx] = symbol;
+        const res = checkWinner(boardState);
+        boardState[idx] = null;
+        if (res && res.winner === symbol) {
+          return idx;
+        }
+      }
+      return -1;
+    }
+
+    // Full Minimax for optimal AI play
+    function minimax(boardState, depth, isMaximizing) {
+      const result = checkWinner(boardState);
+      if (result) {
+        if (result.winner === 'O') return 10 - depth;
+        if (result.winner === 'X') return depth - 10;
+        return 0;
+      }
+
+      const empty = getAvailableIndices(boardState);
+
+      if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (const idx of empty) {
+          boardState[idx] = 'O';
+          const score = minimax(boardState, depth + 1, false);
+          boardState[idx] = null;
+          bestScore = Math.max(score, bestScore);
+        }
+        return bestScore;
+      } else {
+        let bestScore = Infinity;
+        for (const idx of empty) {
+          boardState[idx] = 'X';
+          const score = minimax(boardState, depth + 1, true);
+          boardState[idx] = null;
+          bestScore = Math.min(score, bestScore);
+        }
+        return bestScore;
+      }
+    }
+
+    function getBestMinimaxMove(boardState) {
+      let bestScore = -Infinity;
+      let bestMoves = [];
+      const empty = getAvailableIndices(boardState);
+
+      for (const idx of empty) {
+        boardState[idx] = 'O';
+        const score = minimax(boardState, 0, false);
+        boardState[idx] = null;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestMoves = [idx];
+        } else if (score === bestScore) {
+          bestMoves.push(idx);
+        }
+      }
+      return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+    }
+
+    function chooseAIMove() {
+      const empty = getAvailableIndices(state.board);
+      if (empty.length === 0) return -1;
+
+      if (state.difficulty === 'easy') {
+        // Easy: 80% random, 20% block/win
+        if (Math.random() < 0.2) {
+          const winMove = findImmediateWinningMove(state.board, 'O');
+          if (winMove !== -1) return winMove;
+        }
+        return empty[Math.floor(Math.random() * empty.length)];
+      }
+
+      if (state.difficulty === 'medium') {
+        // Medium: Always take immediate win, 65% block player's threat, otherwise random/center
+        const winMove = findImmediateWinningMove(state.board, 'O');
+        if (winMove !== -1) return winMove;
+
+        if (Math.random() < 0.65) {
+          const blockMove = findImmediateWinningMove(state.board, 'X');
+          if (blockMove !== -1) return blockMove;
+        }
+
+        if (state.board[4] === null && Math.random() < 0.5) return 4;
+        return empty[Math.floor(Math.random() * empty.length)];
+      }
+
+      // Hard Mode:
+      // 80% optimal Minimax (aims for draw or AI win),
+      // 20% probabilistic suboptimal move so player has ~20% realistic chance to break through and win!
+      if (Math.random() < 0.80) {
+        return getBestMinimaxMove([...state.board]);
+      } else {
+        // Pick a non-optimal move if available so player gets an opening
+        const bestMove = getBestMinimaxMove([...state.board]);
+        const otherMoves = empty.filter(i => i !== bestMove);
+        if (otherMoves.length > 0) {
+          return otherMoves[Math.floor(Math.random() * otherMoves.length)];
+        }
+        return bestMove;
+      }
+    }
+
+    function triggerAITurn() {
+      if (state.gameOver || state.mode !== 'solo' || state.currentPlayer !== 'O') return;
+      state.aiBusy = true;
+      updateGameLabelsAndStatus();
+
+      setTimeout(() => {
+        if (state.gameOver) return;
+        const aiIndex = chooseAIMove();
+        state.aiBusy = false;
+        if (aiIndex !== -1) {
+          makeMove(aiIndex, 'O');
+        }
+      }, 360);
+    }
+
+    // Event Listeners
+    cells.forEach(cell => {
+      cell.addEventListener('click', () => {
+        if (state.gameOver || state.aiBusy) return;
+        const index = Number(cell.dataset.index);
+
+        if (state.mode === 'solo') {
+          if (state.currentPlayer !== 'X') return;
+          const moved = makeMove(index, 'X');
+          if (moved && !state.gameOver) {
+            triggerAITurn();
+          }
+        } else {
+          makeMove(index, state.currentPlayer);
+        }
+      });
+    });
+
+    document.getElementById('selectSoloBtn').addEventListener('click', () => {
+      playSound('ui');
+      showScreen(difficultyScreen);
+    });
+
+    document.getElementById('selectMultiBtn').addEventListener('click', () => {
+      playSound('ui');
+      startGame('multi');
+    });
+
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playSound('ui');
+        startGame('solo', btn.dataset.diff);
+      });
+    });
+
+    document.getElementById('backFromDiffBtn').addEventListener('click', () => {
+      playSound('ui');
+      showScreen(entryScreen);
+    });
+
+    document.getElementById('nextRoundBtn').addEventListener('click', () => {
+      playSound('ui');
+      startNewRound();
+    });
+
+    document.getElementById('resetScoreBtn').addEventListener('click', () => {
+      playSound('ui');
+      state.scores = { X: 0, O: 0 };
+      scoreXEl.textContent = '0';
+      scoreOEl.textContent = '0';
+      startNewRound();
+    });
+
+    document.getElementById('mainMenuBtn').addEventListener('click', () => {
+      playSound('ui');
+      showScreen(entryScreen);
+    });
+
+    document.getElementById('brandHomeBtn').addEventListener('click', () => {
+      playSound('ui');
+      showScreen(entryScreen);
+    });
+
+    // Settings Modal Controls
+    const settingsModal = document.getElementById('settingsModal');
+    document.getElementById('openSettingsBtn').addEventListener('click', () => {
+      playSound('ui');
+      settingsModal.classList.add('open');
+    });
+
+    document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+      playSound('ui');
+      settingsModal.classList.remove('open');
+    });
+
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) {
+        settingsModal.classList.remove('open');
+      }
+    });
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyLanguage(btn.dataset.lang);
+        playSound('ui');
+      });
+    });
+
+    document.getElementById('soundToggleRow').addEventListener('click', () => {
+      state.soundEnabled = !state.soundEnabled;
+      const switchEl = document.getElementById('soundSwitch');
+      switchEl.classList.toggle('on', state.soundEnabled);
+      const dict = TRANSLATIONS[state.lang];
+      document.getElementById('soundStateText').textContent = state.soundEnabled ? dict.soundOn : dict.soundOff;
+      if (state.soundEnabled) playSound('ui');
+    });
+
+    // Initialize default language
+    applyLanguage('az');
+  </script>
+</body>
+</html>
